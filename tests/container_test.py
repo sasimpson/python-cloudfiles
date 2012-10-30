@@ -1,7 +1,7 @@
 import unittest
 from cloudfiles  import Connection, Container, Object
 from cloudfiles.authentication import MockAuthentication as Auth
-from cloudfiles.errors import InvalidContainerName, InvalidObjectName
+from cloudfiles.errors import InvalidContainerName, InvalidObjectName, NoSuchObject
 from cloudfiles.consts import container_name_limit
 from fakehttp   import CustomHTTPConnection
 from misc       import printdoc
@@ -119,7 +119,7 @@ class ContainerTest(unittest.TestCase):
             pass
 
         try:
-            basket.name = 'a'*(container_name_limit+1)
+            basket.name = 'a' * (container_name_limit + 1)
             self.fail("InvalidContainerName exception not raised!")
         except InvalidContainerName:
             pass
@@ -130,6 +130,14 @@ class ContainerTest(unittest.TestCase):
         Verify that methods do not accept invalid container names.
         """
         self.assertRaises(InvalidObjectName, self.container.delete_object, '')
+
+    @printdoc
+    def test_delete_non_existing_object_raises(self):
+        """
+        Verify that deleting a non-existant object returns a NoSuchObject
+        exception
+        """
+        self.assertRaises(NoSuchObject, self.container.delete_object, 'nosuchobject')
 
     def setUp(self):
         self.auth = Auth('jsmith', 'qwerty')

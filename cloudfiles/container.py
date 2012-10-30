@@ -11,7 +11,7 @@ See COPYING for license information.
 
 from storage_object import Object, ObjectResults
 from errors import ResponseError, InvalidContainerName, InvalidObjectName, \
-                   ContainerNotPublic, CDNNotEnabled
+                   ContainerNotPublic, CDNNotEnabled, NoSuchObject
 from utils  import requires_name
 import consts
 from fjson  import json_loads
@@ -532,6 +532,8 @@ class Container(object):
         if not object_name:
             raise InvalidObjectName(object_name)
         response = self.conn.make_request('DELETE', [self.name, object_name])
+        if response.status == 404:
+            raise NoSuchObject(object_name)
         if (response.status < 200) or (response.status > 299):
             response.read()
             raise ResponseError(response.status, response.reason)

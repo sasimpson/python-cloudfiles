@@ -235,7 +235,17 @@ class TrackerSocket(FakeSocket):
         self.write('HTTP/1.1 200 Ok\n')
         self.write('Content-Type: text/plain\n')
         self.write('Connection: close\n\n')
-    render_DELETE = render_PUT
+
+    def render_DELETE(self, path, args):
+        if len(path) == 4 and path[3] == 'nosuchobject':
+            self.write('HTTP/1.1 404 Not Found\n')
+            self.write('Content-Type: text/plain\n')
+            self.write('Content-Length: 0\n')
+            self.write('Connection: close\n\n')
+        else:
+            self.write('HTTP/1.1 200 Ok\n')
+            self.write('Content-Type: text/plain\n')
+            self.write('Connection: close\n\n')
 
     def render(self, method, uri):
         if '?' in uri:
@@ -246,6 +256,7 @@ class TrackerSocket(FakeSocket):
         else:
             args = {}
             path = uri.strip('/').split('/')
+        print path
 
         if hasattr(self, 'render_%s' % method):
             getattr(self, 'render_%s' % method)(path, args)
